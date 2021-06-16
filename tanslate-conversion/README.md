@@ -9,5 +9,10 @@
 - js/ts <-> json: Node
 - json <-> csv: PHP
 
+### 执行脚本
+- node process.js
+- php -f Js2Csv.php
+- php -f Csv2Js.php
+
 ### 后续优化
 - 使用Node统一处理

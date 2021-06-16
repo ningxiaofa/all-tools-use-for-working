@@ -1,74 +1,81 @@
 <?php
 
-// 获取json字符串, 并转换成数组
-$IDJson = file_get_contents('./json/Js2Csv/id/id.json');
-$IDArr = json_decode($IDJson, true)['test'];
-$exportFile = './csv/Js2Csv/id/id.csv';
+require_once './WriteFile.php';
 
-// $IDJson = file_get_contents('./json/Js2Csv/th/th.json');
-// $IDArr = json_decode($IDJson, true)['TH'];
-// $exportFile = './csv/Js2Csv/th/th.csv';
-
-// Optimization: Use recursive: TBD
-function process($arr, $filePath, $isWtihBomHeader = false)
+class Js2Csv
 {
-    // var_dump($arr);
-    // exit;
-    foreach ($arr as $key => $value) {
-        if (is_array($value)) {
-            foreach ($value as $skey => $svalue) {
-                if (is_array($svalue)) {
-                    foreach ($value as $sskey => $ssvalue) {
-                        if (is_array($ssvalue)) {
-                            foreach ($ssvalue as $ssskey => $sssvalue) {
-                                if (is_array($sssvalue)) {
-                                    foreach ($sssvalue as $sssskey => $ssssvalue) {
-                                        if (is_array($ssssvalue)) {
-                                            foreach ($ssssvalue as $ssssskey => $sssssvalue) {
-                                                if (is_array($sssssvalue)) {
-                                                    foreach ($sssssvalue as $sssssskey => $ssssssvalue) {
-                                                        echo $sssssskey, $ssssssvalue . PHP_EOL;
+    private $jsonStr;
+    private $jsonArr;
+    private $writeFileInstance = null;
+
+    public function __construct($importFile = './json/Js2Csv/id/id.json', $exportFile = './csv/Js2Csv/id/id.csv', $withBomHeader = false)
+    {
+        $this->jsonStr = file_get_contents($importFile);
+        $this->jsonArr = json_decode($this->jsonStr, true);
+        $this->writeFileInstance = new WriteFile($exportFile, $withBomHeader);
+    }
+
+    // It's a stupid way
+    private function process(array $arr)
+    {
+        foreach ($arr as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $skey => $svalue) {
+                    if (is_array($svalue)) {
+                        foreach ($value as $sskey => $ssvalue) {
+                            if (is_array($ssvalue)) {
+                                foreach ($ssvalue as $ssskey => $sssvalue) {
+                                    if (is_array($sssvalue)) {
+                                        foreach ($sssvalue as $sssskey => $ssssvalue) {
+                                            if (is_array($ssssvalue)) {
+                                                foreach ($ssssvalue as $ssssskey => $sssssvalue) {
+                                                    if (is_array($sssssvalue)) {
+                                                        foreach ($sssssvalue as $sssssskey => $ssssssvalue) {
+                                                            echo $sssssskey, $ssssssvalue . PHP_EOL;
+                                                        }
+                                                    } else {
+                                                        $this->writeFileInstance->write("$key.$skey.$sskey.$ssskey.$sssskey.$ssssskey,\"$sssssvalue\"", $this->withBomHeader);
                                                     }
-                                                } else {
-                                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey.$ssssskey,\"$sssssvalue\"", $isWtihBomHeader);
                                                 }
+                                            } else {
+                                                $this->writeFileInstance->write("$key.$skey.$sskey.$ssskey.$sssskey,\"$ssssvalue\"", $this->withBomHeader);
                                             }
-                                        } else {
-                                            writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey,\"$ssssvalue\"", $isWtihBomHeader);
                                         }
+                                    } else {
+                                        $this->writeFileInstance->write("$key.$skey.$sskey.$ssskey,\"$sssvalue\"", $this->withBomHeader);
                                     }
-                                } else {
-                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey,\"$sssvalue\"", $isWtihBomHeader);
                                 }
+                            } else {
+                                $this->writeFileInstance->write("$key.$skey.$sskey,\"$ssvalue\"", $this->withBomHeader);
                             }
-                        } else {
-                            writeFile($filePath, "$key.$skey.$sskey,\"$ssvalue\"", $isWtihBomHeader);
                         }
+                    } else {
+                        $this->writeFileInstance->write("$key.$skey,\"$svalue\"", $this->withBomHeader);
                     }
-                } else {
-                    writeFile($filePath, "$key.$skey,\"$svalue\"", $isWtihBomHeader);
                 }
+            } else {
+                $this->writeFileInstance->write("$key,\"$value\"", $this->withBomHeader);
             }
-        } else {
-            writeFile($filePath, "$key,\"$value\"", $isWtihBomHeader);
         }
     }
-}
 
-function writeFile($filePath, $content, $isWtihBomHeader = false)
-{
-    $mode = file_exists($filePath) ? 'a' : 'w';
-    $targetFile = fopen($filePath, $mode) or die('Unable to open file!');
-
-    // 写入带有bom头的内容，用于正常显示简繁体中文
-    if ($isWtihBomHeader) {
-        $content = chr(0xEF) . chr(0xBB) . chr(0xBF) . $content;
+    // Entrance of run
+    public function run()
+    {
+        // Get first element
+        $data = reset($this->jsonArr);
+        $this->process($data);
     }
-
-    fwrite($targetFile, $content . "\n");
-    fclose($targetFile);
-    echo "Successful Write: $content" . PHP_EOL;
 }
 
-// process($IDArr, $exportFile);
-process($IDArr, $exportFile, true);
+// ID
+$importFile = './json/Js2Csv/id/id.json';
+$exportFile = './csv/Js2Csv/id/id.csv';
+
+// TH
+// $importFile = './json/Js2Csv/th/th.json';
+// $exportFile = './csv/Js2Csv/th/th.csv';
+
+$Js2Csv = new Js2Csv($importFile, $exportFile);
+// $Js2Csv = new Js2Csv($importFile, $exportFile, true);
+$Js2Csv->run();
