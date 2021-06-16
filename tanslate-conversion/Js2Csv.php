@@ -12,6 +12,8 @@ $exportFile = './csv/Js2Csv/id/id.csv';
 // Optimization: Use recursive: TBD
 function process($arr, $filePath, $isWtihBomHeader = false)
 {
+    // var_dump($arr);
+    // exit;
     foreach ($arr as $key => $value) {
         if (is_array($value)) {
             foreach ($value as $skey => $svalue) {
@@ -28,27 +30,27 @@ function process($arr, $filePath, $isWtihBomHeader = false)
                                                         echo $sssssskey, $ssssssvalue . PHP_EOL;
                                                     }
                                                 } else {
-                                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey.$ssssskey,\"$sssssvalue\"");
+                                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey.$ssssskey,\"$sssssvalue\"", $isWtihBomHeader);
                                                 }
                                             }
                                         } else {
-                                            writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey,\"$ssssvalue\"");
+                                            writeFile($filePath, "$key.$skey.$sskey.$ssskey.$sssskey,\"$ssssvalue\"", $isWtihBomHeader);
                                         }
                                     }
                                 } else {
-                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey,\"$sssvalue\"");
+                                    writeFile($filePath, "$key.$skey.$sskey.$ssskey,\"$sssvalue\"", $isWtihBomHeader);
                                 }
                             }
                         } else {
-                            writeFile($filePath, "$key.$skey.$sskey,\"$ssvalue\"");
+                            writeFile($filePath, "$key.$skey.$sskey,\"$ssvalue\"", $isWtihBomHeader);
                         }
                     }
                 } else {
-                    writeFile($filePath, "$key.$skey,\"$svalue\"");
+                    writeFile($filePath, "$key.$skey,\"$svalue\"", $isWtihBomHeader);
                 }
             }
         } else {
-            writeFile($filePath, "$key,\"$value\"");
+            writeFile($filePath, "$key,\"$value\"", $isWtihBomHeader);
         }
     }
 }
@@ -68,5 +70,5 @@ function writeFile($filePath, $content, $isWtihBomHeader = false)
     echo "Successful Write: $content" . PHP_EOL;
 }
 
-process($IDArr, $exportFile);
-// process($IDArr, $exportFile, true);
+// process($IDArr, $exportFile);
+process($IDArr, $exportFile, true);
